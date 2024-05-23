@@ -1,0 +1,116 @@
+﻿@page "/Revista-crear"
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject NavigationManager NavigationManager
+
+<h3>Revista</h3>
+
+<EditForm Model="@revista" OnValidSubmit="@Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="Titulo">Titulo de la revista</label>
+        <InputText id="Titulo" @bind-Value="revista.Titulo" class="form-control" />
+        <ValidationMessage For="() => revista.Titulo" />
+    </div>
+    <div class="form-group">
+        <label for="Autor">Autor de la revista</label>
+        <InputText id="Autor" @bind-Value="revista.Autor" class="form-control" />
+        <ValidationMessage For="() => revista.Autor" />
+    </div>
+    <div class="form-group">
+        <label for="Genero">Genero de la revista</label>
+        <InputText id="Genero" @bind-Value="revista.Genero" class="form-control" />
+        <ValidationMessage For="() => revista.Genero" />
+    </div>
+    <div class="form-group">
+        <label for="AnioPublicacion">Año de publicación del la revista</label>
+        <InputText id="AnioPublicacion" @bind-Value="revista.AnioPublicacion" class="form-control" />
+        <ValidationMessage For="() => revista.AnioPublicacion" />
+    </div>
+    <div class="form-group">
+        <label for="Volumen">Volumen de la revista</label>
+        <InputText id="Volumen" @bind-Value="revista.Volumen" class="form-control" />
+        <ValidationMessage For="() => revista.Volumen" />
+    </div>
+    <div class="form-group">
+        <label for="NumEjemplar">Número de ejemplar de la revista</label>
+        <InputText id="NumEjemplar" @bind-Value="revista.NumEjemplar" class="form-control" />
+        <ValidationMessage For="() => revista.NumEjemplar" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </div>
+</EditForm>
+
+@if (revistas != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Titulo</th>
+                <th>Autor</th>
+                <th>Genero</th>
+                <th>AnioPublicacion</th>
+                <th>Volumen</th>
+                <th>NumEjemplar</th>
+                <th>Eliminar</th>
+                <th>Editar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var revista in revistas)
+            {
+                <tr>
+                    <td>@revista.Titulo</td>
+                    <td>@revista.Autor</td>
+                    <td>@revista.Genero</td>
+                    <td>@revista.AnioPublicacion</td>
+                    <td>@revista.Volumen</td>
+                    <td>@revista.NumEjemplar</td>
+                    <td>
+                        <button class="btn btn-danger"
+                                @onclick="@(() => BorrarRevista(revista.Volumen))">
+                            Eliminar
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-warning"
+                                @onclick="@(() => NavigationManager.NavigateTo($"/revista-editar/{revista.Volumen}"))">
+                            Editar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Revista revista = new Revista();
+    List<Revista> revistas = new List<Revista>();
+
+
+    protected async Task Guardar()
+    {
+        revistas.Add(revista);
+
+        await localStorage.SetItemAsync("revistas", revistas);
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        revistas = await localStorage.GetItemAsync<List<Revista>>("revistas");
+        if (revistas == null)
+            revistas = new List<Revista>();
+    }
+
+    protected async Task BorrarRevista(string Volumen)
+    {
+        revistas.Remove(revistas.First(c => c.Volumen == Volumen));
+        await localStorage.SetItemAsync("revistas", revistas);
+
+    }
+}
